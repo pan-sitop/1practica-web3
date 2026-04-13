@@ -1,69 +1,53 @@
 <?php
-require_once '../config/db.php';
+include '../config/db.php';
+include '../includes/header.php';
 
-// Si es POST, procesar la actualización
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $stmt = $conn->prepare("UPDATE equipos_laboratorio SET numero_serie=?, nombre_equipo=?, tipo=?, fecha_adquisicion=?, estado_operativo=? WHERE id=?");
-    $stmt->bind_param("ssssii", $_POST['numero_serie'], $_POST['nombre_equipo'], $_POST['tipo'], $_POST['fecha_adquisicion'], $_POST['estado_operativo'], $_POST['id']);
-    
-    if ($stmt->execute()) {
-        header("Location: index.php");
-        exit();
-    } else {
-        die("Error al actualizar: " . $stmt->error);
-    }
+if(isset($_GET['idEditar'])){
+    $id = $_GET['idEditar'];
+
+    $sql = ("SELECT * FROM equipos_laboratorio WHERE id = $id");
+
+    $resultado = $conn->query($sql);
+    $equipo = $resultado->fetch_assoc();
 }
 
-// Si es GET, mostrar el formulario precargado
-if (!isset($_GET['id'])) {
+if(isset($_POST['actualizar'])){
+    $id = $_POST['id'];
+    $numero_serie = $_POST['numero_serie'];
+    $nombre_equipo = $_POST['nombre_equipo'];
+    $tipo = $_POST['tipo'];
+    $fecha_adquisicion = $_POST['fecha_adquisicion'];
+    $estado_operativo = $_POST['estado_operativo'];
+
+    $sql = ("UPDATE equipos_laboratorio SET numero_serie = '$numero_serie', nombre_equipo = '$nombre_equipo', tipo = '$tipo', fecha_adquisicion = '$fecha_adquisicion', estado_operativo = '$estado_operativo' WHERE id = '$id'"); 
+
+    $conn->query($sql);
+
     header("Location: index.php");
-    exit();
 }
-
-$stmt = $conn->prepare("SELECT * FROM equipos_laboratorio WHERE id = ?");
-$stmt->bind_param("i", $_GET['id']);
-$stmt->execute();
-$equipo = $stmt->get_result()->fetch_assoc();
-
-include '../includes/header.php'; 
 ?>
 
-<div class="mt-4">
-    <h2>Editar Equipo</h2>
-    <form action="editar.php" method="POST" class="mt-4">
-        <input type="hidden" name="id" value="<?= $equipo['id'] ?>">
-        
-        <div class="mb-3">
-            <label>Número de Serie</label>
-            <input type="text" name="numero_serie" class="form-control" value="<?= htmlspecialchars($equipo['numero_serie']) ?>" required>
-        </div>
-        <div class="mb-3">
-            <label>Nombre del Equipo</label>
-            <input type="text" name="nombre_equipo" class="form-control" value="<?= htmlspecialchars($equipo['nombre_equipo']) ?>" required>
-        </div>
-        <div class="mb-3">
-            <label>Tipo</label>
-            <select name="tipo" class="form-select" required>
-                <option value="Computadora" <?= $equipo['tipo'] == 'Computadora' ? 'selected' : '' ?>>Computadora</option>
-                <option value="Proyector" <?= $equipo['tipo'] == 'Proyector' ? 'selected' : '' ?>>Proyector</option>
-                <option value="Servidor" <?= $equipo['tipo'] == 'Servidor' ? 'selected' : '' ?>>Servidor</option>
-                <option value="Redes" <?= $equipo['tipo'] == 'Redes' ? 'selected' : '' ?>>Redes</option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label>Fecha de Adquisición</label>
-            <input type="date" name="fecha_adquisicion" class="form-control" value="<?= $equipo['fecha_adquisicion'] ?>" required>
-        </div>
-        <div class="mb-3">
-            <label>Estado Operativo</label>
-            <select name="estado_operativo" class="form-select" required>
-                <option value="1" <?= $equipo['estado_operativo'] == 1 ? 'selected' : '' ?>>Activo</option>
-                <option value="0" <?= $equipo['estado_operativo'] == 0 ? 'selected' : '' ?>>En Reparación</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-warning">Actualizar Equipo</button>
-        <a href="index.php" class="btn btn-secondary">Cancelar</a>
-    </form>
-</div>
+<h2>Actualizar equipo</h2>
+<form action="" method="POST">
+    <label for="">ID:</label>
+    <input type="number" name="id" value="<?php echo $equipo['id'];?>" readonly> <br>
+    <label for="">N° Serie:</label>
+    <input type="text" name="numero_serie" value="<?php echo $equipo['numero_serie'];?>"> <br>
+    <label for="">Nombre:</label>
+    <input type="text" name="nombre_equipo" value="<?php echo $equipo['nombre_equipo'];?>"> <br>
+    <label for="">Tipo:</label>
+    <select name="tipo">
+        <option value="Computadora" <?php echo($equipo['tipo'] == 'Computadora') ? 'selected' : ''; ?>>Computadora</option>
+        <option value="Proyector" <?php echo($equipo['tipo'] == 'Proyector') ? 'selected' : ''; ?>>Proyector</option>
+        <option value="Servidor" <?php echo($equipo['tipo'] == 'Servidor') ? 'selected' : ''; ?>>Servidor</option>
+        <option value="Redes" <?php echo($equipo['tipo'] == 'Redes') ? 'selected' : ''; ?>>Redes</option>
+    </select> <br>
+    <label for="">Fecha:</label>
+    <input type="date" name="fecha_adquisicion" value="<?php echo $equipo['fecha_adquisicion'];?>"> <br>
+    <label for="">Estado Operativo (1 Activo, 0 Reparación):</label>
+    <input type="number" name="estado_operativo" min="0" max="1" value="<?php echo $equipo['estado_operativo'];?>"> <br>
+    
+    <button type="submit" name="actualizar">ACTUALIZAR</button>
+</form>
 
 <?php include '../includes/footer.php'; ?>

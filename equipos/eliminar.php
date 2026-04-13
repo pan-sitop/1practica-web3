@@ -1,13 +1,8 @@
 <?php
-require_once '../config/db.php';
-
-if (isset($_GET['id'])) {
-    $stmt = $conn->prepare("DELETE FROM equipos_laboratorio WHERE id = ?");
-    $stmt->bind_param("i", $_GET['id']);
-    $stmt->execute();
-    $stmt->close();
+include '../config/db.php';
+if(isset($_GET['idEliminar'])){
+    $id = $_GET['idEliminar'];
+    $conn->query("DELETE FROM equipos_laboratorio WHERE id = '$id'");
+    header("Location: index.php");
 }
-
-header("Location: index.php");
-exit();
 ?>
